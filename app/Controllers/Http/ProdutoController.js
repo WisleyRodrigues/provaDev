@@ -1,5 +1,7 @@
 'use strict'
 
+const Produto = use('App/Models/Produto');
+
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
@@ -9,18 +11,6 @@
  */
 class ProdutoController {
   /**
-   * Show a list of all produtos.
-   * GET produtos
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async index ({ request, response, view }) {
-  }
-
-  /**
    * Create/save a new produto.
    * POST produtos
    *
@@ -28,7 +18,12 @@ class ProdutoController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store({ request, response }) {
+    const data = request.only(['nome', 'descricao', 'qtd_estoque']);
+
+    const produto = await Produto.create(data);
+
+    return produto;
   }
 
   /**
@@ -40,7 +35,10 @@ class ProdutoController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params, request, response, view }) {
+  async show({ params, request, response, view }) {
+    const produto = await Produto.findOrFail(params.id);
+
+    return produto;
   }
 
   /**
@@ -51,7 +49,16 @@ class ProdutoController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params, request, response }) {
+  async update({ params, request, response }) {
+    const data = request.only(['nome', 'descricao', 'qtd_estoque']);
+
+    const produto = await Produto.findOrFail(params.id);
+
+    produto.merge(data)
+
+    await produto.save()
+
+    return produto;
   }
 
   /**
@@ -62,7 +69,67 @@ class ProdutoController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy ({ params, request, response }) {
+  async destroy({ params, request, response }) {
+    const produto = await Produto.findOrFail(params.id)
+
+    await produto.delete();
+  }
+
+  /**
+   * Venda de um produto com id.
+   * POST produtos/:id/sell
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async sell({ params, request, response }) {
+    const produto = await Produto.findOrFail(params.id)
+
+    const data = request.only(['qtd_venda']);
+
+    const estoque = produto.qtd_estoque - data.qtd_venda;
+
+    if (estoque < 0) {
+      throw new Error('Não foi possivel efetuar esta venda pois a quantidade de itens solicitados é maior que a quantidade do estoque.')
+    } else {
+      await produto.merge({ qtd_estoque: estoque })
+      await produto.save()
+    }
+
+    return produto;
+  }
+
+  /**
+   * Consulta estoque de um produto com id.
+   * GET produtos/:id/estoque
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async estoque({ params, request, response }) {
+    const produto = await Produto.findOrFail(params.id)
+
+    return { 'qtdEmEstoque': produto.qtd_estoque };
+  }
+
+  /**
+   * Consulta a necessidade de reposição do estoque.
+   * GET produtos/:id/estoque
+   *
+   * @param {object} ctx
+   * @param {Request} ctx.request
+   * @param {Response} ctx.response
+   */
+  async reposicao({ params, request, response }) {
+    const produto = await Produto.findOrFail(params.id)
+
+    if (((produto.qtd_register/100) * 30) > produto.qtd_estoque) {
+      return { 'reporEstoque': true };
+    }
+
+    return { 'reporEstoque': false };
   }
 }
 

@@ -8,8 +8,9 @@ class ProdutoSchema extends Schema {
     this.create('produtos', (table) => {
       table.increments()
       table.string('descricao')
-      table.string('nome')
-      table.integer('qtd')
+      table.string('nome').notNullable()
+      table.integer('qtd_register').unsigned()
+      table.integer('qtd_estoque').notNullable().unsigned()
       table.timestamps()
     })
   }

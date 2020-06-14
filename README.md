@@ -1,28 +1,28 @@
-# Adonis API application
-
-This is the boilerplate for creating an API server in AdonisJs, it comes pre-configured with.
-
-1. Bodyparser
-2. Authentication
-3. CORS
-4. Lucid ORM
-5. Migrations and seeds
-
 ## Setup
 
-Use the adonis command to install the blueprint
+Instalar previamente o NodeJS, NPM, e MySQL.
 
-```bash
-adonis new yardstick --api-only
-```
+Criar o banco localmente com o nome configurado no .env, juntamente com o password e user.
 
-or manually clone the repo and then run `npm install`.
+Executar o comando `npm i` no diretorio raiz.
+
+Executar o comando `adonis migration:run`
+
+Executar o comando `adonis serve --dev`
 
 
-### Migrations
+### Rotas
 
-Run the following command to run startup migrations.
+GET / produtos/:id -> Exibição do produto (id pelo parametro)
 
-```js
-adonis migration:run
-```
+POST / produtos -> Criação do produto (dados pelo body)
+
+PUT / produtos/:id -> Aualização dos dados do produto (dados pelo body e id pelo parametro)
+
+DELETE / produtos/:id -> Deleta o produto (id pelo parametro)
+
+POST / produtos/:id/sell -> Realiza a venda do produto (id pelo parametro e quantidade pelo body)
+
+GET / produtos/:id/estoque -> Checa o estoque (id pelo parametro)
+
+GET / produtos/:id/reposicao -> Checa se o produto necessita de reposição (id pelo parametro)
